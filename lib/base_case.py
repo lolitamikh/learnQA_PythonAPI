@@ -7,7 +7,7 @@ class BaseCase:
         return response.cookies[cookie_name]
 
     def get_header(self, response: Response, header_name):
-        assert header_name in response.cookies, f"Cannot find header with {header_name} on the last response"
+        assert header_name in response.headers, f"Cannot find header with {header_name} on the last response"
         return response.headers[header_name]
 
     def get_json_value(self, response: Response, name):
