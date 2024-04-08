@@ -30,3 +30,24 @@ class TestUserGet(BaseCase):
 
         expected_fields = ["username", "email", "firstName", "lastName"]
         Assertions.assert_json_has_keys(response2, expected_fields)
+
+    def test_get_other_user(self):
+        data = {
+            'email': 'vinkotov@example.com',
+            'password': '1234'
+        }
+
+        response1 = MyRequests.post("/user/login", data=data)
+
+        auth_sid = self.get_cookie(response1, "auth_sid")
+        token = self.get_header(response1, "x-csrf-token")
+
+        response2 = MyRequests.get("/user/1",
+                                   headers={"x-csrf-token": token},
+                                   cookies={"auth_sid": auth_sid}
+                                   )
+
+        Assertions.assert_json_has_key(response2, "username")
+        Assertions.assert_json_has_not_key(response2, "email")
+        Assertions.assert_json_has_not_key(response2, "firstName")
+        Assertions.assert_json_has_not_key(response2, "lastName")
