@@ -1,9 +1,11 @@
 from lib.base_case import BaseCase
 from lib.assertions import Assertions
 from lib.my_requests import MyRequests
+import allure
 
+@allure.epic("Cases user edit")
 class TestUserEdit(BaseCase):
-
+    @allure.step("registration")
     def register(self):
         register_data = self.prepare_registration_data()
 
@@ -17,6 +19,7 @@ class TestUserEdit(BaseCase):
         )
         return register_data
 
+    @allure.step("login")
     def login(self, login_data):
         response = MyRequests.post("/user/login", data=login_data)
 
@@ -24,6 +27,8 @@ class TestUserEdit(BaseCase):
         token = self.get_header(response, "x-csrf-token")
         return auth_sid, token
 
+    @allure.description("This test create and edit user")
+    @allure.label("happy path")
     def test_edit_just_create_user(self):
         # register
         register_data = self.prepare_registration_data()
@@ -69,7 +74,7 @@ class TestUserEdit(BaseCase):
             "Wrong name of the user after edit"
         )
 
-#   Попытаемся изменить данные пользователя, будучи неавторизованными
+    @allure.description("This test edit user unauthorized")
     def test_edit_not_auth(self):
         user = self.register()
 
@@ -82,6 +87,7 @@ class TestUserEdit(BaseCase):
         assert response.json()['error'] == 'Auth token not supplied', \
             f"Unexpected response result {response.content}"
 
+    @allure.description("This test try to edit user other user")
     def test_edit_other_user(self):
         user1 = self.register()
         user2 = self.register()
@@ -104,7 +110,7 @@ class TestUserEdit(BaseCase):
 
         Assertions.assert_json_value_by_name(response2, "username", user2['username'], "Wrong name of user after edit")
 
-# - Попытаемся изменить email пользователя, будучи авторизованными тем же пользователем, на новый email без символа @
+    @allure.description("This test edit  user with incorrect email")
     def test_edit_incorrect_email(self):
         user = self.register()
 
@@ -128,7 +134,7 @@ class TestUserEdit(BaseCase):
         Assertions.assert_json_value_by_name(response2, 'email', user['email'],
                                              f"email has been changed to an invalid email: {new_email}")
 
-    # - Попытаемся изменить firstName пользователя, будучи авторизованными тем же пользователем, на очень короткое значение в один символ
+    @allure.description("This test edit  user with short first name")
     def test_edit_short_name(self):
         user = self.register()
 

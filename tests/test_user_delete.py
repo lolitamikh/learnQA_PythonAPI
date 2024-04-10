@@ -1,8 +1,11 @@
 from lib.base_case import BaseCase
 from lib.assertions import Assertions
 from lib.my_requests import MyRequests
+import allure
 
+@allure.epic("Delete cases")
 class TestUserDelete(BaseCase):
+    @allure.step("registration")
     def register(self):
         register_data = self.prepare_registration_data()
 
@@ -16,6 +19,7 @@ class TestUserDelete(BaseCase):
         )
         return register_data
 
+    @allure.step("login")
     def login(self, login_data):
         response = MyRequests.post("/user/login", data=login_data)
 
@@ -23,6 +27,7 @@ class TestUserDelete(BaseCase):
         token = self.get_header(response, "x-csrf-token")
         return auth_sid, token
 
+    @allure.description("This test try delete user with id 2")
     def test_delete_user_default(self):
         data = {
             'email': 'vinkotov@example.com',
@@ -39,6 +44,8 @@ class TestUserDelete(BaseCase):
         assert response.json()['error'] == 'Please, do not delete test users with ID 1, 2, 3, 4 or 5.', \
             f"Unexpected response result {response.content}"
 
+    @allure.description("This test create and delete user")
+    @allure.label("happy path")
     def test_user_delete_succesed(self):
         user = self.register()
 
@@ -59,6 +66,7 @@ class TestUserDelete(BaseCase):
         assert response2.content.decode("utf-8") == f"This is 404 error!\n<a href='/'>Home</a>", \
             f"Unexpected response content: {response2.content}"
 
+    @allure.description("This test try to delete user other user")
     def test_delete_other_user(self):
         user1 = self.register()
         user2 = self.register()
